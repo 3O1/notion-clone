@@ -17,3 +17,13 @@ body {
     --radius: 0.5rem;
   }
 }
+
+:root {
+  --muted-foreground: #6b7280; /* Neutral-500 */
+  --secondary: #f5f5f5; /* Neutral-100 */
+}
+
+.dark {
+  --muted-foreground: #9ca3af; /* Neutral-400 */
+  --secondary: #262626; /* Neutral-800 */
+}

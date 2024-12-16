@@ -1,14 +1,27 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { ChevronsLeftIcon, MenuIcon } from 'lucide-react';
+import {
+  ChevronsLeftIcon,
+  MenuIcon,
+  PlusCircle,
+  Search,
+  Settings,
+} from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React, { ElementRef, useEffect, useRef, useState } from 'react';
 import { useMediaQuery } from 'usehooks-ts';
+import UserItem from './user-item';
+import { useMutation } from 'convex/react';
+import { api } from '@convex/_generated/api';
+import { toast } from 'sonner';
+import { DocumentList } from './document-list';
+import { Item } from './item';
 
 export const Navigation = () => {
   const pathname = usePathname();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const create = useMutation(api.documents.create);
 
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<'aside'>>(null);
@@ -91,12 +104,22 @@ export const Navigation = () => {
     }
   };
 
+  const handleCreate = () => {
+    const promise = create({ title: 'Untitled' });
+
+    toast.promise(promise, {
+      loading: 'Creating a new note...',
+      success: 'New note created!',
+      error: 'Failed to create a new note.',
+    });
+  };
+
   return (
     <>
       <aside
         ref={sidebarRef}
         className={cn(
-          'relative flex h-full overflow-y-auto group/sidebar bg-neutral-100 dark:bg-neutral-800 w-60 flex-col z-[99999',
+          'relative flex h-full overflow-y-auto group/sidebar bg-secondary w-60 flex-col z-[99999',
           isResetting && 'transition-all ease-in-out duration-300',
           isMobile && 'w-0'
         )}
@@ -113,11 +136,14 @@ export const Navigation = () => {
         </div>
 
         <div>
-          <p>action items</p>
+          <UserItem />
+          <Item onClick={handleCreate} label="Search" icon={Search} isSearch />
+          <Item onClick={() => {}} label="Settings" icon={Settings} />
+          <Item onClick={() => {}} label="New page" icon={PlusCircle} />
         </div>
 
         <div className="mt-4">
-          <p>documents</p>
+          <DocumentList />
         </div>
 
         <div
@@ -140,7 +166,7 @@ export const Navigation = () => {
             <MenuIcon
               onClick={resetWidth}
               role="button"
-              className="w-6 h-6 text-neutral-500 dark:text-neutral-400"
+              className="w-6 h-6 text-muted-foreground"
             />
           )}
         </nav>

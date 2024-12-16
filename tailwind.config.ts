@@ -13,6 +13,9 @@ export default {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
         secondary: 'var(--secondary)',
+        muted: {
+          foreground: 'var(--muted-foreground)', // Define this for text-muted-foreground
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
