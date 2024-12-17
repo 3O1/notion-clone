@@ -1,0 +1,121 @@
+'use client';
+
+import React, { ElementRef, useRef, useState } from 'react';
+import { Doc } from '@convex/_generated/dataModel';
+import { IconPicker } from './icon-picker';
+import { Button } from './ui/button';
+import { ImageIcon, Smile, X } from 'lucide-react';
+import { useMutation } from 'convex/react';
+import { api } from '@convex/_generated/api';
+import TextareaAutoSize from 'react-textarea-autosize';
+
+interface ToolbarProps {
+  initialData: Doc<'documents'>;
+  preview?: boolean;
+}
+
+export const Toolbar = ({ initialData, preview }: ToolbarProps) => {
+  const inputRef = useRef<ElementRef<'textarea'>>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [value, setValue] = useState(initialData.title);
+
+  const update = useMutation(api.documents.update);
+
+  const enableInput = () => {
+    if (preview) return;
+
+    setIsEditing(true);
+    setTimeout(() => {
+      setValue(initialData.title);
+      inputRef.current?.focus();
+    }, 0);
+  };
+
+  const disableInput = () => setIsEditing(false);
+
+  const onInput = (value: string) => {
+    setValue(value);
+    update({
+      id: initialData._id,
+      title: value || 'Untitled',
+    });
+  };
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      disableInput();
+    }
+  };
+
+  return (
+    <div className="pl-[54px] group relative">
+      {!!initialData.icon && !preview && (
+        <div className="flex items-center pt-6 gap-x-2 group/icon">
+          <IconPicker onChange={() => {}}>
+            <p className="text-6xl transition hover:opacity-75">
+              {initialData.icon}
+            </p>
+          </IconPicker>
+
+          <Button
+            onClick={() => {}}
+            className="text-xs transition rounded-full opacity-0 group-hover/icon:opacity-100 text-muted-foreground"
+            size="icon"
+            variant="outline"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+      {!!initialData.icon && preview && (
+        <p className="pt-6 text-6xl">{initialData.icon}</p>
+      )}
+
+      <div className="flex items-center py-4 opacity-0 group-hover:opacity-100 gap-x-1">
+        {!initialData.icon && !preview && (
+          <IconPicker asChild onChange={() => {}}>
+            <Button
+              className="text-xs text-muted-foreground"
+              variant="outline"
+              size="sm"
+            >
+              <Smile className="w-4 h-4 mr-2" />
+              Add icon
+            </Button>
+          </IconPicker>
+        )}
+
+        {!initialData.coverImage && !preview && (
+          <Button
+            className="text-xs text-muted-foregrond"
+            variant="outline"
+            size="sm"
+            onClick={() => {}}
+          >
+            <ImageIcon className="w-4 h-4 mr-2" />
+            Add cover
+          </Button>
+        )}
+      </div>
+
+      {isEditing && !preview ? (
+        <TextareaAutoSize
+          onBlur={disableInput}
+          onKeyDown={onKeyDown}
+          value={value}
+          onChange={(e) => onInput(e.target.value)}
+          ref={inputRef}
+          className="text-5xl bg-transparent font-bold break-words outline-none text-[#3F3F3F] dark:text[#CFCFCF] resize-none"
+        />
+      ) : (
+        <div
+          onClick={enableInput}
+          className="pb-[11.5px] text-5xl font-bold break-words text-[#3F3F3F] dark:text[#CFCFCF] outline-none"
+        >
+          {initialData.title}
+        </div>
+      )}
+    </div>
+  );
+};
