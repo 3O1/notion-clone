@@ -51,12 +51,12 @@ export const Toolbar = ({ initialData, preview }: ToolbarProps) => {
     }
   };
 
-  const onIconSelect = (icon: string) => {
-    update({
-      id: initialData._id,
-      icon,
-    });
-  };
+  // const onIconSelect = (icon: string) => {
+  //   update({
+  //     id: initialData._id,
+  //     icon,
+  //   });
+  // };
 
   const onRemoveIcon = () => {
     removeIcon({
