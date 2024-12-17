@@ -1,20 +1,33 @@
 'use client';
 
 import { useQuery } from 'convex/react';
+import { useEffect, useState } from 'react';
 import { api } from '@convex/_generated/api';
 import { Id } from '@convex/_generated/dataModel';
 import { Toolbar } from '@/components/toolbar';
 
 interface DocumentIdPageProps {
-  params: {
+  params: Promise<{
     documentId: Id<'documents'>;
-  };
+  }>;
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  const document = useQuery(api.documents.getById, {
-    documentId: params.documentId,
-  });
+  const [documentId, setDocumentId] = useState<Id<'documents'> | null>(null);
+
+  useEffect(() => {
+    const resolveParams = async () => {
+      const resolvedParams = await params;
+      setDocumentId(resolvedParams.documentId);
+    };
+
+    resolveParams();
+  }, [params]);
+
+  const document = useQuery(
+    api.documents.getById,
+    documentId ? { documentId } : 'skip' // Skip query if documentId is null
+  );
 
   if (document === undefined) {
     return <div>loading...</div>;
