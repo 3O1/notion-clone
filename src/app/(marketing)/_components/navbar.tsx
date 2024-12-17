@@ -2,7 +2,7 @@
 
 import { useConvexAuth } from 'convex/react';
 import { useScrollTop } from '@/hooks/use-scroll-top';
-import { ModeToggle } from '@/components/mode-togge';
+import { ModeToggle } from '@/components/mode-toggle';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Logo } from './logo';
