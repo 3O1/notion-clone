@@ -7,6 +7,7 @@ import { ImageIcon, Smile, X } from 'lucide-react';
 import { useMutation } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import TextareaAutoSize from 'react-textarea-autosize';
+import { useCoverImage } from '@/hooks/use-cover-image';
 
 interface ToolbarProps {
   initialData: Doc<'documents'>;
@@ -20,6 +21,8 @@ export const Toolbar = ({ initialData, preview }: ToolbarProps) => {
 
   const update = useMutation(api.documents.update);
   const removeIcon = useMutation(api.documents.removeIcon);
+
+  const coverImage = useCoverImage();
 
   const enableInput = () => {
     if (preview) return;
@@ -104,7 +107,7 @@ export const Toolbar = ({ initialData, preview }: ToolbarProps) => {
             className="text-xs text-muted-foregrond"
             variant="outline"
             size="sm"
-            onClick={() => {}}
+            onClick={coverImage.onOpen}
           >
             <ImageIcon className="w-4 h-4 mr-2" />
             Add cover
