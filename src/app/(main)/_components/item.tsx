@@ -1,9 +1,29 @@
 'use client';
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useUser } from '@clerk/clerk-react';
+import { api } from '@convex/_generated/api';
 import { Id } from '@convex/_generated/dataModel';
-import { ChevronDown, ChevronRight, LucideIcon } from 'lucide-react';
+
+import { useMutation } from 'convex/react';
+import {
+  ChevronDown,
+  ChevronRight,
+  LucideIcon,
+  MoreHorizontal,
+  PlusIcon,
+  Trash,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface ItemProps {
   id?: Id<'documents'>;
@@ -31,6 +51,49 @@ export const Item = ({
   onExpand,
   expanded,
 }: ItemProps) => {
+  const { user } = useUser();
+  const router = useRouter();
+
+  const create = useMutation(api.documents.create);
+  const archive = useMutation(api.documents.archive);
+
+  const onArchive = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    event.stopPropagation();
+    if (!id) return;
+    const promise = archive({ id });
+
+    toast.promise(promise, {
+      loading: 'Moving to trash...',
+      success: 'Note moved to trash!',
+      error: 'Failed to archive note.',
+    });
+  };
+
+  const handleExpand = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    event.stopPropagation();
+    onExpand?.();
+  };
+
+  const onCreate = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    event.stopPropagation();
+    if (!id) return;
+    const promise = create({ title: 'Untitled', parentDocument: id }).then(
+      (documentId) => {
+        if (!expanded) {
+          onExpand?.();
+        }
+        router.push(`/documents/${documentId}`);
+      }
+    );
+    toast.promise(promise, {
+      loading: 'Creating a new note...',
+      success: 'New note created!',
+      error: 'Failed to create a new note.',
+    });
+  };
+
   const ChevronIcon = expanded ? ChevronDown : ChevronRight;
 
   return (
@@ -48,7 +111,7 @@ export const Item = ({
         <div
           role="button"
           className="h-full mr-1 rounded-sm hover:bg-neutral-300 dark:bg-neutral-600"
-          onClick={() => {}}
+          onClick={handleExpand}
         >
           <ChevronIcon className="w-4 h-4 shrink-0 text-muted-foreground/50" />
         </div>
@@ -66,6 +129,44 @@ export const Item = ({
         <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-neutral-300 dark:bg-neutral-700 px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
           <span className="text-sm">⌘</span>K
         </kbd>
+      )}
+
+      {!!id && (
+        <div className="flex items-center ml-auto gap-x-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <div
+                role="button"
+                className="h-full ml-auto rounded-sm opacity-0 group-hover:opacity-100 hover:bg-neutral-300 dark:hover:bg-neutral-600"
+              >
+                <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-60"
+              align="start"
+              side="right"
+              forceMount
+            >
+              <DropdownMenuItem onClick={onArchive}>
+                <Trash className="w-4 h-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="p-2 text-xs text-muted-foreground">
+                Last edited by: {user?.fullName}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div
+            role="button"
+            onClick={onCreate}
+            className="h-full ml-auto rounded-sm opacity-0 group-hover:opacity-100 hover:bg-neutral-300 dark:hover:bg-neutral-600"
+          >
+            <PlusIcon className="w-4 h-4 text-muted-foreground" />
+          </div>
+        </div>
       )}
     </div>
   );
